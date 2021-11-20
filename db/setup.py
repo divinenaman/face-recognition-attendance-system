@@ -15,13 +15,13 @@ def adapt_array(arr):
     out = io.BytesIO()
     np.save(out, arr)
     out.seek(0)
-    return sqlite3.Binary(out.read().encode(compressor))  # zlib, bz2
+    return sqlite3.Binary(out.read())  # zlib, bz2
 
 def convert_array(text):
     out = io.BytesIO(text)
     out.seek(0)
-    out = io.BytesIO(out.read().decode(compressor))
-    return np.load(out)
+    out = io.BytesIO(out.read())
+    return np.fromstring(out, dtype='>f2')
 
 sqlite3.register_adapter(np.ndarray, adapt_array)
 sqlite3.register_converter("array", convert_array)
@@ -34,6 +34,7 @@ def create_connection(path="/home/zorin/face-recognition-attendance-system/db/da
     except Error as e:
         print(f"The error '{e}' occurred")
 
+    create_tables(connection)
     return connection
 
 def create_tables(con):
