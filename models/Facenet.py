@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from Resnet import InceptionResNetV1
+from models.Resnet import InceptionResNetV1
 
 WEIGHT_BASE = os.path.join(
     "/home/zorin/face-recognition-attendance-system/weights/model_weights_facenet")
@@ -27,6 +27,3 @@ def load_model():
 
     return model
 
-
-model = load_model()
-model.summary()
