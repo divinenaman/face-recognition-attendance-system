@@ -21,7 +21,7 @@ def convert_array(text):
     out = io.BytesIO(text)
     out.seek(0)
     out = io.BytesIO(out.read())
-    return np.fromstring(out, dtype='>f2')
+    return np.load(out)
 
 sqlite3.register_adapter(np.ndarray, adapt_array)
 sqlite3.register_converter("array", convert_array)
@@ -29,7 +29,7 @@ sqlite3.register_converter("array", convert_array)
 def create_connection(path="/home/zorin/face-recognition-attendance-system/db/data/test.db"):
     connection = None
     try:
-        connection = sqlite3.connect(path)
+        connection = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
         print("Connection to SQLite DB successful")
     except Error as e:
         print(f"The error '{e}' occurred")
@@ -55,4 +55,17 @@ def test(con):
     a = cur.execute("SELECT * from user")
     print(a.fetchall())
 
+    con.close()
+
+def test_arr(con):
+    cur = con.cursor()
+    q = "SELECT name,reg,embedding from user"
+    res = cur.execute(q)
+    x = []
+    y = []
+    for name,reg,embed in res.fetchall():
+        y.append(name)
+        x.append(embed)
+
+    print(x, y)
     con.close()
