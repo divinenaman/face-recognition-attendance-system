@@ -21,12 +21,12 @@ async def get_embedding_from_image_string(Model, data):
     
     return embedding
 
-def add_user(Model, con, data):
+async def add_user(Model, con, data):
     try: 
         cur = con.cursor()
         q = "INSERT INTO user (name, reg, email, embedding) VALUES (?, ?, ?, ?)"
 
-        embedding = get_embedding_from_image_string(Model, data)[0]
+        embedding =await get_embedding_from_image_string(Model, data)[0]
 
         cur.execute(q,(data["name"], data["reg"], data["email"], embedding))
         con.commit()

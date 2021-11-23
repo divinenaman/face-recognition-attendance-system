@@ -5,12 +5,15 @@ from flask import jsonify
 import models.Facenet as Facenet
 import db.setup as db
 from server.controllers import methods as Controllers
+from flask_cors import CORS
+
 
 Model = Facenet.load_model()
 con = db.create_connection()
 
 
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route("/")
@@ -22,9 +25,9 @@ def hello_world():
 def register_face():
     """
         POST: {
-            "img": BASE64 IMAGE STRING,
             "name": STRING,
-            "reg": STRING
+            "reg": STRING,
+            "img": BASE64 IMAGE STRING
         }
     """
     data = request.get_json(silent=True)
@@ -104,11 +107,11 @@ def add_user_to_room():
         )
 
 @app.route("/api/attendance/start", methods=["POST"])
-def add_user_to_room():
+def adding_user_to_room():
     """
         POST: {
             "room_id": INT,
-            "user_id": INT
+            "login_id": INT
         }
     """
     data = request.get_json(silent=True)

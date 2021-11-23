@@ -3,6 +3,7 @@ from sqlite3 import Error
 from db.query import query_dict
 import numpy as np
 import io
+import os
 
 compressor = 'zlib'  # zlib, bz2
 
@@ -26,8 +27,9 @@ def convert_array(text):
 sqlite3.register_adapter(np.ndarray, adapt_array)
 sqlite3.register_converter("array", convert_array)
 
-def create_connection(path="/home/zorin/face-recognition-attendance-system/db/data/test.db"):
+def create_connection(path=os.path.join(os.getcwd(),"db","data","test.db")):
     connection = None
+    print(path)
     try:
         connection = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
         print("Connection to SQLite DB successful")
