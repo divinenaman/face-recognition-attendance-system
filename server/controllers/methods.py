@@ -1,6 +1,7 @@
 import re
 import base64
 import bcrypt
+from threading import Thread
 from datetime import datetime
 from utils import methods
 
@@ -9,7 +10,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import Normalizer
 from sklearn.svm import SVC
 
-async def get_embedding_from_image_string(Model, data):
+def get_embedding_from_image_string(Model, data):
     img = data["img"]
     img = re.sub(r'data:image/.*;base64,','',img)
     im_bytes = base64.b64decode(img)    
@@ -18,15 +19,15 @@ async def get_embedding_from_image_string(Model, data):
     embedding = []
     for f in face:
         embedding.append(methods.get_embedding(Model, f))
-    
+
     return embedding
 
-async def add_user(Model, con, data):
+def add_user(Model, con, data):
     try: 
         cur = con.cursor()
         q = "INSERT INTO user (name, reg, email, embedding) VALUES (?, ?, ?, ?)"
 
-        embedding =await get_embedding_from_image_string(Model, data)[0]
+        embedding = get_embedding_from_image_string(Model, data)[0]
 
         cur.execute(q,(data["name"], data["reg"], data["email"], embedding))
         con.commit()
@@ -36,9 +37,9 @@ async def add_user(Model, con, data):
         print(e)
         return False
 
-async def identify_face(Model, con, data):
+def identify_face(Model, con, data):
     try:
-        embedding = await get_embedding_from_image_string(Model, data)
+        embedding = get_embedding_from_image_string(Model, data)
         cur = con.cursor()
         q = "SELECT id,name,reg,embedding from user"
         res = cur.execute(q)
@@ -65,10 +66,10 @@ async def identify_face(Model, con, data):
 def add_login(con, data):
     try: 
         cur = con.cursor()
-        hass_pass = bcrypt.hashpw(data["password"], "SECRET")
+        #hass_pass = bcrypt.hashpw(data["password"], "SECRET")
 
         q = "INSERT INTO login (username, password) VALUES (?, ?)"
-        cur.execute(q,(data["username"], hass_pass))
+        cur.execute(q,(data["username"], data["password"]))
         con.commit()
         return True
     
@@ -80,7 +81,7 @@ def create_room(con, data):
     try:
         cur = con.cursor()
         q = "INSERT INTO room (room_name, user_id) VALUES (?, ?)"
-        cur.execute(q,(data["room_name"], data["user_id"]))
+        cur.execute(q,(data["room_name"], data["login_id"]))
         con.commit()
         return True
     except Exception as e:
@@ -90,12 +91,12 @@ def create_room(con, data):
 def add_user_to_room(con, data):
     try:
         cur = con.cursor()
-        q = "SELECT id FROM attendance_list WHERE user_id=?"
-        rows = cur.execute(q,(data["user_id"]))
+        q = "SELECT id FROM attendance_list WHERE user_id=? AND room_id=?"
+        rows = cur.execute(q,(data["user_id"],data["room_id"]))
         res = rows.fetchall()
 
         if len(res) != 0:
-            return Exception
+            raise Exception
 
         q = "INSERT INTO attendance_list (room_id, user_id) VALUES (?, ?)"
         cur.execute(q,(data["room_id"], data["user_id"]))
@@ -106,29 +107,34 @@ def add_user_to_room(con, data):
         print(e)
         return False
 
-async def start_marking_attendance(Model, con, data):
+def start_marking_attendance(Model, con, data):
     try:
         cur = con.cursor()
         q = "SELECT user_id FROM attendance_list WHERE room_id=?"
-        rows = cur.execute(q,(data["room_id"]))
-        res = rows.fetchall()
+        rows = cur.execute(q,(data["room_id"],))
+        res1 = rows.fetchall()
+        print(res1)
 
-        if len(res) != 0:
+        if len(res1) == 0:
             return Exception
 
         attendance_date = datetime.now().strftime("%Y-%m-%d")
-        q = "SELECT user_id FROM attendance WHERE room_id=? AND attendance_date!=? GROUP BY user_id"
+        q = "SELECT user_id FROM attendance WHERE room_id=? AND attendance_date=?"
         rows = cur.execute(q,(data["room_id"], attendance_date))
-        res = rows.fetchall()
+        res2 = rows.fetchall()
+        print(res2)
 
-        if len(res) != 0:
-            q = "INSERT INTO attendance (room_id, user_id, attendance_date) VALUES (?, ?, ?)"
-            vals = [(data["room_id"], i, attendance_date) for i in res]
-            cur.executmany(q,vals)
+        
+        q = "INSERT INTO attendance (room_id, user_id, attendance_date) VALUES (?, ?, ?)"
+        vals = [(data["room_id"], i, attendance_date) for i, in res1 if (i,) not in res2]
+        print(vals)
+        cur.executemany(q,vals)
 
         con.commit()
 
-        identify_face_and_mark_attendance(Model, con, data)
+        thread = Thread(target=identify_face_and_mark_attendance, args=(Model, con, data))
+        thread.daemon = True
+        thread.start()
 
         return True
         
@@ -136,12 +142,12 @@ async def start_marking_attendance(Model, con, data):
         print(e)
         return False
 
-async def mark_user_attendance(con, data):
+def mark_user_attendance(con, data):
     try:
         cur = con.cursor()
         
         attendance_date = datetime.now().strftime("%Y-%m-%d")
-        q = "UPDATE attendance SET attendance = ? WHERE room_id=? AND user_id=? AND attendace_date=?"
+        q = "UPDATE attendance SET attendance = ? WHERE room_id=? AND user_id=? AND attendance_date=?"
         d = ("present", data["room_id"], data["user_id"], attendance_date)
         cur.execute(q,d)
         
@@ -152,15 +158,16 @@ async def mark_user_attendance(con, data):
         print(e)
         return False
 
-async def identify_face_and_mark_attendance(Model, con, data):
+def identify_face_and_mark_attendance(Model, con, data):
     try:
-        attendance = await identify_face(Model, con, data)
+        print("Attendance Job Running")
+        attendance = identify_face(Model, con, data)
         for u,n,r in attendance:
             d = {
                 "user_id": u,
                 "room_id": data["room_id"]
             }
-            await mark_user_attendance(con, d)
+            mark_user_attendance(con, d)
         attendance_date = datetime.now().strftime("%Y-%m-%d")
         print(f'{attendance_date}: Attendance Complete for Room ID {d["room_id"]} ') 
     except Exception as e:

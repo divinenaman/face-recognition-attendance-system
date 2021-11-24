@@ -7,6 +7,8 @@ import db.setup as db
 from server.controllers import methods as Controllers
 from flask_cors import CORS
 
+from utils import methods
+
 
 Model = Facenet.load_model()
 con = db.create_connection()
@@ -19,6 +21,27 @@ CORS(app)
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
+
+@app.route("/api/auth/signUp", methods=["POST"])
+def user_signUp():
+    """
+        POST: {
+            "username": STRING,
+            "password": STRING
+        }
+    """
+    data = request.get_json(silent=True)
+    res = Controllers.add_login(con, data)
+    if res == True:
+        return jsonify(
+            status="success",
+            msg="user login added"
+        )
+    else:
+        return jsonify(
+            status="error",
+            msg="Something Went Wrong"
+        )
 
 
 @app.route("/api/face/register", methods=["POST"])
@@ -69,7 +92,7 @@ def create_room():
     """
         POST: {
             "room_name": STRING,
-            "user_id": INT
+            "login_id": INT
         }
     """
     data = request.get_json(silent=True)
@@ -77,12 +100,12 @@ def create_room():
     if res != None:
         return jsonify(
             status="success",
-            msg=res    
+            msg="Room created"    
         )
     else:
         return jsonify(
             status="error",
-            msg="Not Found"
+            msg="Something went wrong"
         )
 
 @app.route("/api/room/addUser", methods=["POST"])
@@ -98,20 +121,20 @@ def add_user_to_room():
     if res != None:
         return jsonify(
             status="success",
-            msg=res    
+            msg="User added to Room"    
         )
     else:
         return jsonify(
             status="error",
-            msg="Not Found"
+            msg="Something went wrong"
         )
 
 @app.route("/api/attendance/start", methods=["POST"])
-def adding_user_to_room():
+def mark_attendance():
     """
         POST: {
             "room_id": INT,
-            "login_id": INT
+            "img": BASE64 IMAGE STRING
         }
     """
     data = request.get_json(silent=True)
@@ -119,12 +142,12 @@ def adding_user_to_room():
     if res != None:
         return jsonify(
             status="success",
-            msg=res    
+            msg="Attendace job running"    
         )
     else:
         return jsonify(
             status="error",
-            msg="Not Found"
+            msg="Something went wrong"
         )
 
 if __name__ == '__main__':
