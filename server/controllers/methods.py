@@ -113,7 +113,6 @@ def start_marking_attendance(Model, con, data):
         q = "SELECT user_id FROM attendance_list WHERE room_id=?"
         rows = cur.execute(q,(data["room_id"],))
         res1 = rows.fetchall()
-        print(res1)
 
         if len(res1) == 0:
             return Exception
@@ -122,12 +121,9 @@ def start_marking_attendance(Model, con, data):
         q = "SELECT user_id FROM attendance WHERE room_id=? AND attendance_date=?"
         rows = cur.execute(q,(data["room_id"], attendance_date))
         res2 = rows.fetchall()
-        print(res2)
 
-        
         q = "INSERT INTO attendance (room_id, user_id, attendance_date) VALUES (?, ?, ?)"
         vals = [(data["room_id"], i, attendance_date) for i, in res1 if (i,) not in res2]
-        print(vals)
         cur.executemany(q,vals)
 
         con.commit()
