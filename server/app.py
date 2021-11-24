@@ -5,6 +5,7 @@ from flask import jsonify
 import models.Facenet as Facenet
 import db.setup as db
 from server.controllers import methods as Controllers
+import server.service.mqtt as mqtt
 from flask_cors import CORS
 
 from utils import methods
@@ -12,7 +13,7 @@ from utils import methods
 
 Model = Facenet.load_model()
 con = db.create_connection()
-
+mqtt_con = mqtt.connect_mqtt()
 
 app = Flask(__name__)
 CORS(app)
@@ -20,6 +21,9 @@ CORS(app)
 
 @app.route("/")
 def hello_world():
+    topic = 1
+    data = { "room_id": 2 }
+    mqtt.publish(mqtt_con, topic, data)
     return "<p>Hello, World!</p>"
 
 @app.route("/api/auth/signUp", methods=["POST"])
