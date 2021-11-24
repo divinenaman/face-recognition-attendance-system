@@ -42,7 +42,8 @@ def create_connection(path=os.path.join(os.getcwd(),"db","data","test.db")):
 def create_tables(con):
     cur = con.cursor()
     cur.execute(query_dict["create_user_table"])
-    cur.execute(query_dict["create_attendace_table"])
+    cur.execute(query_dict["create_attendance_table"])
+    cur.execute(query_dict["create_attendance_list_table"])
     cur.execute(query_dict["create_room_table"])
     cur.execute(query_dict["create_login_table"])
     con.commit()

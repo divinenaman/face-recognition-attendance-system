@@ -9,18 +9,11 @@ query_dict = {
         );
     """,
 
-    "create_attendace_table": """
-        CREATE TABLE IF NOT EXISTS attendance_list (
-            id integer PRIMARY KEY,
-            room_id integer UNIQUE
-        );
-    """,
-
     "create_room_table": """
         CREATE TABLE IF NOT EXISTS room (
             id integer PRIMARY KEY,
             room_name text NOT NULL,
-            login_id integer NOT NULL
+            user_id integer NOT NULL
         );
     """,
 
@@ -46,7 +39,7 @@ query_dict = {
             attendance_date DATE NOT NULL,
             room_id text NOT NULL,
             user_id integer NOT NULL,
-            attendace text NOT NULL DEFAULT absent
+            attendance text NOT NULL DEFAULT absent
         );
     """
 }
