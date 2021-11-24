@@ -3,7 +3,7 @@ import os
 import csv
 
 
-def create_connection(path="/home/zorin/face-recognition-attendance-system/db/data/test.db"):
+def create_connection(path=os.path.join(os.getcwd(),"data","test.db")):
     connection = None
     try:
         connection = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
