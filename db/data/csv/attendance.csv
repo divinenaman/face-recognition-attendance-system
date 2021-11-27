@@ -1,3 +1,7 @@
 id	attendance_date	room_id	user_id	attendance
 1	2021-11-24	1	2	present
 2	2021-11-24	1	1	present
+3	2021-11-27	1	2	absent
+4	2021-11-27	1	1	absent
+5	2021-11-27	1	5	present
+6	2021-11-27	1	6	absent
