@@ -21,10 +21,28 @@ CORS(app)
 
 @app.route("/")
 def hello_world():
-    topic = 1
-    data = { "room_id": 2 }
-    mqtt.publish(mqtt_con, topic, data)
     return "<p>Hello, World!</p>"
+
+@app.route("/api/auth/login", methods=["POST"])
+def user_login():
+    """
+        POST: {
+            "username": STRING,
+            "password:: STRING
+        }
+    """
+    data = request.get_json(silent=True)
+    res = Controllers.login(con, data)
+    if res != None:
+        return jsonify(
+            status="success",
+            msg=res
+        )
+    else:
+        return jsonify(
+            status="error",
+            msg="Something Went Wrong"
+        )
 
 @app.route("/api/auth/signUp", methods=["POST"])
 def user_signUp():
@@ -133,7 +151,50 @@ def add_user_to_room():
             msg="Something went wrong"
         )
 
+@app.route("/api/room/get", methods=["POST"])
+def get_room_info():
+    """
+        POST: {
+            "room_id": INT
+        }
+    """
+    data = request.get_json(silent=True)
+    res = Controllers.getRoomInfo(con, data)
+    if res != None:
+        return jsonify(
+            status="success",
+            msg=res
+        )
+    else:
+        return jsonify(
+            status="error",
+            msg=None
+        )
 @app.route("/api/attendance/start", methods=["POST"])
+def start_attendance():
+    """
+        POST: {
+            "room_id": INT,
+            "physical_room_id: STRING
+        }
+    """
+    data = request.get_json(silent=True)
+    topic = data["physical_room_id"]
+    a = { "room_id": data["room_id"] }
+    res = mqtt.publish(mqtt_con, topic, a)
+    
+    if res != None:
+        return jsonify(
+            status="success",
+            msg="Attendace job published"    
+        )
+    else:
+        return jsonify(
+            status="error",
+            msg="Something went wrong"
+        )
+
+@app.route("/api/attendance/capture", methods=["POST"])
 def mark_attendance():
     """
         POST: {
@@ -142,8 +203,8 @@ def mark_attendance():
         }
     """
     data = request.get_json(silent=True)
-    res = Controllers.start_marking_attendance(Model, con, data)
-    if res != None:
+    res = Controllers.mark_attendance(Model, con, data)
+    if res == True:
         return jsonify(
             status="success",
             msg="Attendace job running"    

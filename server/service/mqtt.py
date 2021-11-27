@@ -22,16 +22,13 @@ def connect_mqtt():
 
 
 def publish(client, topic_id, data):
-    topic = f"/mqtt/fras/{topic_id}"
-
-    msg = {
-        "room_id": data["room_id"]
-    }
-
-    result = client.publish(topic, json.dumps(msg))
+    topic = f"/vit/room/{topic_id}"
+    result = client.publish(topic, json.dumps(data))
     status = result[0]
 
     if status == 0:
         print(f"MQTT: Message Sent to topic `{topic_id}`")
+        return True
     else:
         print(f"MQTT: Failed to send message to topic {topic_id}")
+        return False
