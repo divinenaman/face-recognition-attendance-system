@@ -72,21 +72,12 @@ def login(con, data):
         q = "SELECT id FROM login WHERE username=? AND password=?"
         rows = cur.execute(q, (data["username"], data["password"]))
         res = rows.fetchall()
-        
-        res = []
-        idx = None
-        print(res)
         if len(res) > 0:
             idx, = res[0]
-
-            q = "SELECT id FROM room WHERE user_id = ?"
-            rows = cur.execute(q, (idx,))
-            res = rows.fetchall()
-        
             return {
-                "login_id": idx,
-                "rooms": res
+                "login_id": idx
             }
+
         else:
             return None
     except Exception as e:

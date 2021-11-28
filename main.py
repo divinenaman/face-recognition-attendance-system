@@ -20,4 +20,12 @@ import db.setup as s
 
 con = s.create_connection()
 #s.create_tables(con)
-s.test_arr(con)
+# s.test_arr(con)
+
+cur = con.cursor()
+q = "SELECT id from login WHERE username=? AND password=?"
+a = ("faculty21","test123")
+row = cur.execute(q,a)
+res = row.fetchall()
+
+print(res)
