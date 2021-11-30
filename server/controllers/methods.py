@@ -114,15 +114,25 @@ def create_room(con, data):
 def add_user_to_room(con, data):
     try:
         cur = con.cursor()
+        q = "SELECT id FROM user WHERE email=?"
+        rows = cur.execute(q,(data["email"],))
+        res = rows.fetchall()
+        idx = None
+
+        if len(res) == 0:
+            raise Exception
+        else:
+            (idx,) = res[0]
+
         q = "SELECT id FROM attendance_list WHERE user_id=? AND room_id=?"
-        rows = cur.execute(q, (data["user_id"], data["room_id"]))
+        rows = cur.execute(q, (idx, data["room_id"]))
         res = rows.fetchall()
 
         if len(res) != 0:
             raise Exception
 
         q = "INSERT INTO attendance_list (room_id, user_id) VALUES (?, ?)"
-        cur.execute(q, (data["room_id"], data["user_id"]))
+        cur.execute(q, (data["room_id"], idx))
         con.commit()
         return True
 
@@ -131,7 +141,7 @@ def add_user_to_room(con, data):
         return False
 
 
-def getRoomInfo(con, data):
+def getAllRoomInfo(con, data):
     try:
         cur = con.cursor()
         q = "SELECT room.room_name,attendance.room_id, attendance.attendance_date, user.name, user.reg, attendance.attendance  FROM attendance JOIN user ON user.id = attendance.user_id JOIN room ON room.id = attendance.room_id WHERE room.user_id=?"
@@ -141,6 +151,11 @@ def getRoomInfo(con, data):
         for i in res:
             rname, rid, date, name, reg, attendance = list(map(str, i))
             if preprocess.get(rid) != None:
+                preprocess[rid]["attendee_list"].append({
+                    "name": name,
+                    "reg": reg
+                })
+                
                 if preprocess[rid].get("attendance_list") != None and preprocess[rid].get("attendance_list").get(date) != None:
                     preprocess[rid]["attendance_list"][date].append({
                         "name": name,
@@ -160,7 +175,8 @@ def getRoomInfo(con, data):
             else:
                 preprocess[rid] = {
                     "room_name": rname,
-                    "room_id": rid
+                    "room_id": rid,
+                    "attendee_list": []
                 }
                 preprocess[rid]["attendance_list"] = {}
                 preprocess[rid]["attendance_list"][date] = [

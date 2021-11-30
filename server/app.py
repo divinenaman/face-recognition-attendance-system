@@ -159,7 +159,7 @@ def get_room_info():
         }
     """
     data = request.get_json(silent=True)
-    res = Controllers.getRoomInfo(con, data)
+    res = Controllers.getAllRoomInfo(con, data)
     if res != None:
         return jsonify(
             status="success",
