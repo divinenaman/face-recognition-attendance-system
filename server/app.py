@@ -155,7 +155,7 @@ def add_user_to_room():
 def get_room_info():
     """
         POST: {
-            "room_id": INT
+            "login_id": INT
         }
     """
     data = request.get_json(silent=True)

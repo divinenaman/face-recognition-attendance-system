@@ -144,52 +144,68 @@ def add_user_to_room(con, data):
 def getAllRoomInfo(con, data):
     try:
         cur = con.cursor()
-        q = "SELECT room.room_name,attendance.room_id, attendance.attendance_date, user.name, user.reg, attendance.attendance  FROM attendance JOIN user ON user.id = attendance.user_id JOIN room ON room.id = attendance.room_id WHERE room.user_id=?"
+        
+        q = "SELECT room.room_name, room.id, user.id, user.name, user.reg FROM room JOIN attendance_list ON attendance_list.room_id = room.id JOIN user ON user.id = attendance_list.user_id WHERE room.user_id = ?"    
         rows = cur.execute(q, (data["login_id"],))
         res = rows.fetchall()
+        
+        q = "SELECT room.room_name, room.id FROM room WHERE user_id = ?"    
+        rows = cur.execute(q, (data["login_id"],))
+        res_all_rooms = rows.fetchall()
+        
         preprocess = {}
         for i in res:
-            rname, rid, date, name, reg, attendance = list(map(str, i))
-            if preprocess.get(rid) != None:
-                preprocess[rid]["attendee_list"].append({
-                    "name": name,
-                    "reg": reg
-                })
-                
-                if preprocess[rid].get("attendance_list") != None and preprocess[rid].get("attendance_list").get(date) != None:
+            rname, rid, idx, name, reg = list(map(str, i))
+            
+            q = "SELECT attendance_date, attendance FROM attendance WHERE user_id = ? AND room_id = ?"
+            rows = cur.execute(q, (idx,rid))
+            res2 = rows.fetchall()
+
+            if preprocess.get(rid) == None:
+                preprocess[rid] = {
+                    "room_name": rname,
+                    "room_id": rid,
+                    "attendance_list": {},
+                    "attendee_list": []
+                }
+
+            preprocess[rid]["attendee_list"].append({
+                "name": name,
+                "reg": reg
+            })
+
+            for date,attendance in res2:
+                date = str(date)
+                attendance = str(attendance)
+
+                if preprocess[rid].get("attendance_list").get(date) != None:
                     preprocess[rid]["attendance_list"][date].append({
                         "name": name,
                         "reg": reg,
                         "attendance": attendance
                     })
                 else:
-                    if preprocess[rid].get("attendance_list") == None:
-                         preprocess[rid]["attendance_list"] = {}
-                    preprocess[rid]["attendance_list"][date] = [
-                        {
-                            "name": name,
-                            "reg": reg,
-                            "attendance": attendance
-                        }
-                    ]
-            else:
-                preprocess[rid] = {
-                    "room_name": rname,
-                    "room_id": rid,
-                    "attendee_list": []
-                }
-                preprocess[rid]["attendance_list"] = {}
-                preprocess[rid]["attendance_list"][date] = [
-                    {
+                    preprocess[rid]["attendance_list"][date] = [{
                         "name": name,
                         "reg": reg,
                         "attendance": attendance
-                    }
-                ]
+                    }]
+
+        for (name,rid) in res_all_rooms:
+            name = str(name)
+            rid = str(rid)
+
+            if preprocess.get(rid) == None:
+                preprocess[rid] = {
+                    "room_name": name,
+                    "room_id": rid,
+                    "attendance_list": {},
+                    "attendee_list": []
+                }
+
         return list(preprocess.values())
     except Exception as e:
         print(e)
-        print(preprocess)
         return None
 
 
