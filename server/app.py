@@ -109,6 +109,22 @@ def identify_face():
             msg="Not Found"
         )
 
+@app.route("/api/user/get")
+def get_all_attendee_info():
+    res = Controllers.getAllAttendee(con)
+
+    if res != None:
+        return jsonify(
+            status="success",
+            msg=res    
+        )
+
+    else:
+        return jsonify(
+            status="error",
+            msg="Something Went Wrong"
+        )
+
 @app.route("/api/room/create", methods=["POST"])
 def create_room():
     """

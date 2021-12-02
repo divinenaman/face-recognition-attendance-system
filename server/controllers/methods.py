@@ -140,6 +140,26 @@ def add_user_to_room(con, data):
         print(e)
         return False
 
+def getAllAttendee(con):
+    try:
+        cur = con.cursor()
+
+        q = "SELECT name, reg, email FROM user"
+        rows = cur.execute(q)
+        res = rows.fetchall()
+        preprocess = []
+        for i in res:
+            name, reg, email = list(map(str, i))
+            preprocess.append({
+                "name": name,
+                "reg": reg,
+                "email": email
+            })
+        return preprocess
+
+    except Exception as e:
+        print(e)
+        return None
 
 def getAllRoomInfo(con, data):
     try:
