@@ -10,6 +10,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import Normalizer
 from sklearn.svm import SVC
 
+from server.service import mqtt
 
 def get_embedding_from_image_string(Model, data):
     img = data["img"]
@@ -229,7 +230,7 @@ def getAllRoomInfo(con, data):
         return None
 
 
-def mark_attendance(Model, con, data):
+def mark_attendance(Model, con, mqtt_con, data):
     try:
         cur = con.cursor()
         q = "SELECT user_id FROM attendance_list WHERE room_id=?"
@@ -252,7 +253,7 @@ def mark_attendance(Model, con, data):
         con.commit()
 
         thread = Thread(target=identify_face_and_mark_attendance,
-                        args=(Model, con, data))
+                        args=(Model, con, mqtt_con, data))
         thread.daemon = True
         thread.start()
 
@@ -278,8 +279,9 @@ def mark_user_attendance(con, data):
         return False
 
 
-def identify_face_and_mark_attendance(Model, con, data):
+def identify_face_and_mark_attendance(Model, con, mqtt_con, data):
     try:
+        start_time = datetime.now()
         print("Attendance Job Running")
         attendance = identify_face(Model, con, data)
         attendance_date = datetime.now().strftime("%Y-%m-%d")
@@ -291,7 +293,13 @@ def identify_face_and_mark_attendance(Model, con, data):
                 "attendance_date": attendance_date
             }
             mark_user_attendance(con, d)
+        end_time = datetime.now()
+        diff_time = end_time - start_time
+        diff_time = diff_time.total_seconds()
         print(
             f'{attendance_date}: Attendance Complete for Room ID {d["room_id"]} ')
+        topic = f'/fras/viz/time'
+        d = { "x": len(attendance), "y": diff_time }
+        res = mqtt.publish(mqtt_con, topic, d)
     except Exception as e:
         print(e)

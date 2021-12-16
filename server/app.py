@@ -195,7 +195,7 @@ def start_attendance():
         }
     """
     data = request.get_json(silent=True)
-    topic = data["physical_room_id"]
+    topic = f'/room/{data["physical_room_id"]}'
     a = { "room_id": data["room_id"] }
     res = mqtt.publish(mqtt_con, topic, a)
     
@@ -219,7 +219,7 @@ def mark_attendance():
         }
     """
     data = request.get_json(silent=True)
-    res = Controllers.mark_attendance(Model, con, data)
+    res = Controllers.mark_attendance(Model, con, mqtt_con, data)
     if res == True:
         return jsonify(
             status="success",

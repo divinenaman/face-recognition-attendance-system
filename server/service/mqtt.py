@@ -22,7 +22,7 @@ def connect_mqtt():
 
 
 def publish(client, topic_id, data):
-    topic = f"/vit/room/{topic_id}"
+    topic = f"{topic_id}"
     result = client.publish(topic, json.dumps(data))
     status = result[0]
 
