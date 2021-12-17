@@ -3,7 +3,7 @@
         "id": "c4e87e7c533a1bac",
         "type": "tab",
         "label": "Flow 13",
-        "disabled": true,
+        "disabled": false,
         "info": ""
     },
     {
@@ -11,19 +11,19 @@
         "type": "mqtt in",
         "z": "c4e87e7c533a1bac",
         "name": "",
-        "topic": "/vit/room/1",
+        "topic": "/room/ab-1-302",
         "qos": "0",
         "datatype": "json",
         "broker": "27f533fbfdbaf03b",
         "nl": false,
         "rap": true,
         "rh": 0,
-        "x": 80,
-        "y": 200,
+        "inputs": 0,
+        "x": 160,
+        "y": 160,
         "wires": [
             [
-                "6fb3066e1e316918",
-                "674a0f0d3812c193"
+                "6fb3066e1e316918"
             ]
         ]
     },
@@ -40,33 +40,9 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 690,
-        "y": 160,
+        "x": 590,
+        "y": 440,
         "wires": []
-    },
-    {
-        "id": "d52d3246ce7863e2",
-        "type": "ui_webcam",
-        "z": "c4e87e7c533a1bac",
-        "name": "",
-        "group": "e08a580d7efccc43",
-        "order": 2,
-        "width": 0,
-        "height": 5,
-        "countdown": false,
-        "autoStart": true,
-        "hideCaptureButton": false,
-        "showImage": "2",
-        "mirror": true,
-        "format": "jpeg",
-        "x": 460,
-        "y": 220,
-        "wires": [
-            [
-                "b0accf686d267492",
-                "674a0f0d3812c193"
-            ]
-        ]
     },
     {
         "id": "b0accf686d267492",
@@ -79,12 +55,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 590,
-        "y": 360,
+        "x": 490,
+        "y": 300,
         "wires": [
             [
-                "6578277407438e95",
-                "674a0f0d3812c193"
+                "6578277407438e95"
             ]
         ]
     },
@@ -101,8 +76,9 @@
         "persist": false,
         "proxy": "",
         "authType": "",
-        "x": 680,
-        "y": 280,
+        "senderr": false,
+        "x": 560,
+        "y": 380,
         "wires": [
             [
                 "674a0f0d3812c193"
@@ -113,7 +89,7 @@
         "id": "6fb3066e1e316918",
         "type": "change",
         "z": "c4e87e7c533a1bac",
-        "name": "",
+        "name": "set MQTT data in Context",
         "rules": [
             {
                 "t": "set",
@@ -135,11 +111,34 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 280,
-        "y": 140,
+        "x": 410,
+        "y": 160,
         "wires": [
             [
                 "d52d3246ce7863e2"
+            ]
+        ]
+    },
+    {
+        "id": "d52d3246ce7863e2",
+        "type": "ui_webcam",
+        "z": "c4e87e7c533a1bac",
+        "name": "",
+        "group": "e08a580d7efccc43",
+        "order": 2,
+        "width": 0,
+        "height": 5,
+        "countdown": false,
+        "autoStart": true,
+        "hideCaptureButton": false,
+        "showImage": "2",
+        "mirror": true,
+        "format": "jpeg",
+        "x": 460,
+        "y": 220,
+        "wires": [
+            [
+                "b0accf686d267492"
             ]
         ]
     },
@@ -150,6 +149,7 @@
         "broker": "mqtt.eclipseprojects.io",
         "port": "1883",
         "clientid": "",
+        "autoConnect": true,
         "usetls": false,
         "protocolVersion": "3",
         "keepalive": "60",
@@ -172,7 +172,7 @@
     {
         "id": "e08a580d7efccc43",
         "type": "ui_group",
-        "name": "Default",
+        "name": "Default1",
         "tab": "33eb103a4c418db8",
         "order": 1,
         "disp": true,
@@ -183,7 +183,7 @@
     {
         "id": "33eb103a4c418db8",
         "type": "ui_tab",
-        "name": "Home",
+        "name": "Room",
         "icon": "dashboard",
         "disabled": false,
         "hidden": false
