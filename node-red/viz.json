@@ -1,0 +1,110 @@
+[
+    {
+        "id": "29b509c34bfb0ecf",
+        "type": "tab",
+        "label": "Flow 3",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "00d9ac57c10c4ee7",
+        "type": "mqtt in",
+        "z": "29b509c34bfb0ecf",
+        "name": "",
+        "topic": "/fras/viz/time",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "27f533fbfdbaf03b",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 210,
+        "y": 180,
+        "wires": [
+            [
+                "a39890c86bc8944c",
+                "5252c4ba4afa33be"
+            ]
+        ]
+    },
+    {
+        "id": "b2957fee4dcee088",
+        "type": "chartjs-horizontal-bar",
+        "z": "29b509c34bfb0ecf",
+        "name": "test",
+        "path": "charts",
+        "charttitle": "Chart title",
+        "xaxis": "Time (sec)",
+        "yaxis": "No. of Attendees",
+        "x": 570,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a39890c86bc8944c",
+        "type": "function",
+        "z": "29b509c34bfb0ecf",
+        "name": "",
+        "func": "let data = flow.get(\"dataset_time\")\n\nif (data) {\n    data.dataset.push(msg.payload)  \n} else {\n    data = {\n        channel: \"Time Taken to capture Attendance\",\n        color: \"black\",\n        dataset: [msg.payload]\n    }\n}\n\nflow.set(\"dataset_time\", data)\nmsg.payload = data\n\nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 180,
+        "wires": [
+            [
+                "b2957fee4dcee088"
+            ]
+        ]
+    },
+    {
+        "id": "5252c4ba4afa33be",
+        "type": "debug",
+        "z": "29b509c34bfb0ecf",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 440,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "27f533fbfdbaf03b",
+        "type": "mqtt-broker",
+        "name": "FRAS ",
+        "broker": "mqtt.eclipseprojects.io",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "3",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": ""
+    }
+]
