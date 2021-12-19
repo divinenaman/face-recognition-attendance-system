@@ -2,6 +2,7 @@ from io import BytesIO
 import numpy as np
 from PIL import Image
 from mtcnn import MTCNN
+import tensorflow as tf
 
 def get_embedding(model, face_pixels):
     # scale pixel values
@@ -14,6 +15,7 @@ def get_embedding(model, face_pixels):
     # transform face into one sample
     samples = np.expand_dims(face_pixels, axis=0)
 
+    samples = tf.convert_to_tensor(samples, np.float32)
     # make prediction to get embedding
     yhat = model.predict(samples)
     return yhat[0]

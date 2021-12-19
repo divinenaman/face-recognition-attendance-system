@@ -41,9 +41,20 @@ def add_user(Model, con, data):
         return False
 
 
-def identify_face(Model, con, data):
+def identify_face(Model, con, mqtt_con, data):
     try:
+        start_time = datetime.now()
+        
         embedding = get_embedding_from_image_string(Model, data)
+        
+        end_time = datetime.now()
+        diff_time = end_time - start_time
+        diff_time = diff_time.total_seconds()
+
+        topic = f'/fras/viz/time'
+        d = { "x": len(embedding), "y": diff_time }
+        res = mqtt.publish(mqtt_con, topic, d)
+
         cur = con.cursor()
         q = "SELECT id,name,reg,embedding from user"
         res = cur.execute(q)
@@ -55,12 +66,13 @@ def identify_face(Model, con, data):
             y_dict[idx] = (idx, name, reg)
             x.append(embed)
 
-        model_svm = SVC(kernel='linear', probability=True)
+        model_svm = SVC(C=100000, probability=True, gamma=1e-07, decision_function_shape="ovr")
         model_svm.fit(x, y)
 
-        ans = model_svm.predict(embedding)
-        res = [y_dict[i] for i in ans]
-
+        ans = model_svm.decision_function(embedding)
+        res = [y_dict[i+1] for i,val in enumerate(ans[0]) if val >= 8.2]
+        print(ans, res)
+        
         return res
 
     except Exception as e:
@@ -281,9 +293,8 @@ def mark_user_attendance(con, data):
 
 def identify_face_and_mark_attendance(Model, con, mqtt_con, data):
     try:
-        start_time = datetime.now()
         print("Attendance Job Running")
-        attendance = identify_face(Model, con, data)
+        attendance = identify_face(Model, con, mqtt_con, data)
         attendance_date = datetime.now().strftime("%Y-%m-%d")
         for u, n, r in attendance:
             print(u)
@@ -293,13 +304,8 @@ def identify_face_and_mark_attendance(Model, con, mqtt_con, data):
                 "attendance_date": attendance_date
             }
             mark_user_attendance(con, d)
-        end_time = datetime.now()
-        diff_time = end_time - start_time
-        diff_time = diff_time.total_seconds()
         print(
             f'{attendance_date}: Attendance Complete for Room ID {d["room_id"]} ')
-        topic = f'/fras/viz/time'
-        d = { "x": len(attendance), "y": diff_time }
-        res = mqtt.publish(mqtt_con, topic, d)
+        
     except Exception as e:
         print(e)
